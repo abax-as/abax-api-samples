@@ -23,7 +23,7 @@ In this sample, a web application performs following steps:
 
 ### Alternatives
 
-In this sample we demonstrate how to work with OpenID Connect protocol directly, without using any external libraries. You may also want to take a look at [openid-client](`https://www.npmjs.com/package/openid-client`) library that implements the backchannel communication.
+In this sample we demonstrate how to work with OpenID Connect protocol directly, without using any external libraries. You may also want to take a look at [openid-client](https://www.npmjs.com/package/openid-client) library that implements the backchannel communication.
 
 ### Running the sample
 
