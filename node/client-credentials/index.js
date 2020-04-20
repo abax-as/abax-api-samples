@@ -73,7 +73,7 @@ async function callApi(token) {
 
     try {
         // call vehicles endpoint
-        var response = await axios.get(`${apiUri}/v1/vehicles`, config);
+        const response = await axios.get(`${apiUri}/v1/vehicles`, config);
         console.info('API call successful');
         console.info(response.data);
 
