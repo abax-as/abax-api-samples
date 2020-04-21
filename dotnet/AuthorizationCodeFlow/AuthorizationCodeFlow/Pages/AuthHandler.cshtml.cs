@@ -1,5 +1,5 @@
 using System;
-using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
 using AuthorizationCodeFlow.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
@@ -50,20 +50,18 @@ namespace AuthorizationCodeFlow.Pages
         {
             // request access to vehicles API as a user
             // for more information on the scopes, please refer to documentation at ABAX Developer Portal
-            var scopes = "openid+abax_profile+open_api+open_api.vehicles+offline_access";
+            var scopes = "openid abax_profile open_api open_api.vehicles offline_access";
 
             var clientId = _configuration["Api:ClientId"];
 
             // this is the URI to which identity provider will redirect after authentication
             // it needs to match the redirect_uri configured on the credentials in ABAX Developer Portal
             // here we want to come back to the AuthHandler page
-            var redirect_uri = GetCallbackUri();
+            var redirectUri = GetCallbackUri();
 
-            var uri = new Uri(
-                new Uri(_configuration["Api:IdentityProvider"]),
-                $"connect/authorize?response_type=code&scope={scopes}&client_id={clientId}&redirect_uri={redirect_uri}");
+            var uri = $"{_configuration["Api:IdentityProvider"]}/connect/authorize?response_type=code&scope={WebUtility.UrlEncode(scopes)}&client_id={clientId}&redirect_uri={WebUtility.UrlEncode(redirectUri)}";
 
-            return Redirect(uri.ToString());
+            return Redirect(uri);
         }
 
 

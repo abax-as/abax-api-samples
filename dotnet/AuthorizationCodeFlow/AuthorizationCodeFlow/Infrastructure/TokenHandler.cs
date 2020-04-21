@@ -22,7 +22,8 @@ namespace AuthorizationCodeFlow.Infrastructure
         public async Task RedeemAuthorizationCode(string user, string code, string redirectUri)
         {
             var tokenResponse = await _client.RedeemAuthorizationCode(code, redirectUri);
-            _tokens[user] = MapTokens(tokenResponse);                
+            if(tokenResponse != null)
+                _tokens[user] = MapTokens(tokenResponse);                
         }
         
         public async Task<string> GetAccessToken(string user)
@@ -34,22 +35,29 @@ namespace AuthorizationCodeFlow.Infrastructure
             if (Expired(userTokens))
             {
                 // we need to refresh the access token using the refresh token
-                return await RefreshAccessToken(user);
+                return await RefreshAccessToken(user, userTokens);
             }
 
             return userTokens.AccessToken;
         }
 
-        private async Task<string> RefreshAccessToken(string user)
+        private async Task<string> RefreshAccessToken(string user, Tokens userTokens)
         {
-            var (result, tokenResponse) = await _client.RefreshTokens(_tokens[user].RefreshToken);
-            if (result == TokenClient.RefreshResult.Ok)
-                _tokens[user] = MapTokens(tokenResponse);
-            else
-                // the refresh token is invalid or expired, the user needs to authenticate again
-                _tokens[user] = null;
-
-            return tokenResponse?.access_token;
+            var (result, tokenResponse) = await _client.RefreshTokens(userTokens.RefreshToken);
+            switch (result)
+            {
+                case TokenClient.RefreshResult.Ok:
+                    _tokens[user] = MapTokens(tokenResponse);
+                    return tokenResponse.access_token;
+                case TokenClient.RefreshResult.InvalidOrExpiredRefreshToken:
+                    // since we don't have a valid refresh token, reset tokens information for user
+                    _tokens[user] = null;
+                    return null;
+                default:
+                    // it was not possible to get the token, but it might have been a transient error
+                    // and the refresh operation will succeed when tried later - do not remove the RT
+                    return null;
+            }
         }
 
         // use 1 minute margin for expiration
